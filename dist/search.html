@@ -1,0 +1,117 @@
+<!DOCTYPE thml>
+<html lang="ja">
+<head>
+  <title>test</title>
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <style>
+    .left {
+      width: 500px;
+      float: left;
+    }
+  </style>
+</head>
+<body>
+  <div id="demo">
+    <ul class="left">
+      <search-item :model="model" :fields="fields" :ops="ops" @remove="remove"></item>
+    </ul>
+
+    <button type="button" v-on:click="convert">convert</button>
+    <br>
+    <textarea cols=80 rows=40 readonly v-model="toJson"></textarea>
+  </div>
+</body>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.9/vue.js'></script>
+<script type="text/javascript" src="search/app.js"></script>
+
+<script>
+const sample = {
+  "type": "must",
+  "children": [
+    {
+      "key": "field_1",
+      "op": "match",
+      "value": "foo"
+    },
+    {
+      "type": "should",
+      "children": [
+        {
+          "key": "field_1",
+          "op": "match",
+          "value": "bar"
+        },
+        {
+          "key": "field_1",
+          "op": "match",
+          "value": "hoge"
+        }
+      ]
+    },
+    {
+      "type": "must_not",
+      "children": [
+      {
+          "key": "field_2",
+          "op": "term",
+          "value": "baz"
+        },
+        // {
+        //   "key": "field_3",
+        //   "op": "range",
+        //   "value": {
+        //     "gt": 20
+        //   }
+        // }
+      ]
+    }
+  ]
+}
+
+const FIELDS = {
+  "field_1": "label_1",
+  "field_2": "label_2",
+  "field_3": "label_3",
+}
+
+const OPS = [
+  "match",
+  "term",
+  // "range",
+]
+
+const demo = new Vue({
+  el: '#demo',
+  data: {
+    model: sample,
+    result: "",
+  },
+  methods: {
+    remove: function() {
+      console.error("root element must not be removed.")
+    },
+    convert: function() {
+      this.result = Kuryu.buildElasticsearchDsl(this.model);
+    }
+  },
+  computed: {
+    toJson: function () {
+      return JSON.stringify(this.result, null, 2);
+    },
+    fields: function() {
+      return FIELDS;
+    },
+    ops: function() {
+      return OPS;
+    },
+  },
+  mounted: function() {
+    this.convert();
+  }
+})
+
+</script>
+
+</html>
